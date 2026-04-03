@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ParkinCare - Dashboard Paciente</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container" style="max-width: 800px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>Mi Panel - ParkinCare</h1>
+            <a href="/" style="color: #e74c3c; text-decoration: none; font-weight: bold;">Cerrar Sesión</a>
+        </div>
+
+        <div class="card">
+            <h2>Mi Estado Actual</h2>
+            <p><strong>Última Puntuación de Evaluación:</strong> <span id="puntuacion_total" style="font-weight:bold; font-size: 1.5em; color: #3498db;">--</span> puntos</p>
+            <p style="color: #7f8c8d; font-size: 0.85em;">(Nota: Una mayor puntuación indica una mayor presencia de síntomas en las últimas dos semanas).</p>
+            
+            <div style="position: relative; height: 300px; width: 100%; margin-top: 20px;">
+                <canvas id="graficaEvolucion"></canvas>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <h2>Acciones Rápidas</h2>
+            <button onclick="window.location.href='/vista-sintomas'" style="margin-bottom: 10px;">📝 Realizar Evaluación de Síntomas</button>
+            <button onclick="window.location.href='/vista-ejercicios'" style="background: #e67e22; margin-bottom: 10px;">🏋️ Mis Ejercicios</button>
+            <button onclick="window.location.href='/vista-historial'" style="background: #9b59b6;">📋 Mi Historial Clínico</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Revisamos si la URL trae un resultado nuevo (ej. ?score=12)
+        const parametrosURL = new URLSearchParams(window.location.search);
+        const scoreNuevo = parametrosURL.get('score');
+
+        // --- DATOS SIMULADOS DEL HISTORIAL ---
+        // Simulación de que el paciente ya tiene 4 evaluaciones anteriores
+        const fechas = ['Hace 4 Sem.', 'Hace 3 Sem.', 'Hace 2 Sem.', 'Semana Pasada'];
+        const puntuaciones = [5, 7, 8, 10]; 
+
+        if (scoreNuevo !== null) {
+            // Actualizamos el número grande de texto
+            document.getElementById('puntuacion_total').innerText = scoreNuevo;
+            
+            // Agregamos el nuevo resultado a nuestras listas para la gráfica
+            fechas.push('Hoy');
+            puntuaciones.push(parseInt(scoreNuevo));
+            
+            // Limpiamos la URL para que no se quede el "?score=" a la vista
+            window.history.replaceState({}, document.title, "/dashboard-paciente");
+        }
+
+        // --- DIBUJAR LA GRÁFICA CON CHART.JS ---
+        const ctx = document.getElementById('graficaEvolucion').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: fechas,
+                datasets: [{
+                    label: 'Puntuación Total de Síntomas',
+                    data: puntuaciones,
+                    borderColor: '#9b59b6', // Un morado profesional
+                    backgroundColor: 'rgba(155, 89, 182, 0.2)', // Fondo morado transparente
+                    borderWidth: 3,
+                    pointBackgroundColor: '#8e44ad',
+                    pointRadius: 5,
+                    tension: 0.3, // Hace la línea sutilmente curva
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Nivel de Severidad (Puntos)'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

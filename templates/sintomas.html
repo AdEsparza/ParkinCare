@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Evaluación - ParkinCare</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container" style="max-width: 650px;">
+        <div class="card">
+            <h2 style="text-align: center; color: #3498db;">Evaluación de Seguimiento</h2>
+            <p style="text-align: center; font-size: 0.9em; color: #7f8c8d;">Registra tus síntomas de las últimas 2 semanas.</p>
+
+            <form action="/guardar_evaluacion" method="post" id="formSintomas">
+                
+                <div class="form-section">
+                    <h3>1. ¿Cómo te sentiste en general?</h3>
+                    <div class="checkbox-group" style="grid-template-columns: 1fr 1fr 1fr;">
+                        <label class="radio-item"><input type="radio" name="sentimiento_general" value="0" required> Bien</label>
+                        <label class="radio-item"><input type="radio" name="sentimiento_general" value="1"> Regular</label>
+                        <label class="radio-item"><input type="radio" name="sentimiento_general" value="2"> Mal</label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>2. Síntomas Motores <span style="font-size:0.8em; color:#7f8c8d; font-weight:normal;">(0 = Nada, 3 = Severo)</span></h3>
+                    <div class="grid-inputs">
+                        {% for item in ['Temblores', 'Rigidez muscular', 'Lentitud de movimiento', 'Problemas para caminar', 'Problemas de equilibrio'] %}
+                        <div style="display: flex; flex-direction: column;">
+                            <label style="font-size: 0.9em; margin-bottom: 5px;">{{ item }}</label>
+                            <input type="number" name="motor_{{ loop.index }}" min="0" max="3" value="0" required>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>3. Síntomas No Motores <span style="font-size:0.8em; color:#7f8c8d; font-weight:normal;">(0 = Nada, 2 = Severo)</span></h3>
+                    <div class="grid-inputs">
+                        {% for item in ['Problemas de sueño', 'Fatiga', 'Estreñimiento', 'Mareos', 'Cambios de ánimo'] %}
+                        <div style="display: flex; flex-direction: column;">
+                            <label style="font-size: 0.9em; margin-bottom: 5px;">{{ item }}</label>
+                            <input type="number" name="nomotor_{{ loop.index }}" min="0" max="2" value="0" required>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>4. Nivel de Independencia</h3>
+                    <select name="independencia" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                        <option value="0">100% - Totalmente independiente</option>
+                        <option value="1">75% - Leve dificultad</option>
+                        <option value="2">50% - Necesita ayuda</option>
+                        <option value="3">25% - Totalmente dependiente</option>
+                    </select>
+                </div>
+
+                <div class="form-section">
+                    <h3>5. Cognitivo / Emocional <span style="font-size:0.8em; color:#7f8c8d; font-weight:normal;">(0 = Nada, 2 = Severo)</span></h3>
+                    <div class="grid-inputs">
+                        {% for item in ['Problemas de memoria', 'Dificultad concentración', 'Tristeza', 'Ansiedad'] %}
+                        <div style="display: flex; flex-direction: column;">
+                            <label style="font-size: 0.9em; margin-bottom: 5px;">{{ item }}</label>
+                            <input type="number" name="cognitivo_{{ loop.index }}" min="0" max="2" value="0" required>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <button type="submit" style="background: #3498db; width: 100%; margin-top: 10px;">Enviar Evaluación</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

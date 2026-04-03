@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ParkinCare - Dashboard Médico</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container" style="max-width: 900px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>Panel Médico - ParkinCare</h1>
+            <a href="/" style="color: #e74c3c; text-decoration: none; font-weight: bold;">Cerrar Sesión</a>
+        </div>
+
+        <div class="card">
+            <h2>Buscador de Pacientes</h2>
+            <p style="color: #7f8c8d; font-size: 0.9em; margin-bottom: 15px;">Ingrese el ID de 3 dígitos generado en el registro (ej. 001, 002).</p>
+            
+            <input type="text" id="id_paciente" placeholder="ID del paciente..." style="padding: 10px; width: 60%; margin-right: 10px;">
+            <button onclick="buscarPaciente()" style="width: auto;">Buscar Historial</button>
+            
+            <p id="error_busqueda" style="color: red; display: none; margin-top: 10px; font-weight: bold;">Paciente no encontrado. Verifique el ID.</p>
+        </div>
+
+        <div id="panelResultados" style="display: none; margin-top: 20px;">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px;">
+                    <h2 id="nombre_paciente" style="margin: 0;">Paciente: --</h2>
+                    <span style="background: #2ecc71; color: white; padding: 5px 15px; border-radius: 15px; font-weight: bold;">ID: <span id="display_id">--</span></span>
+                </div>
+                
+                <p style="margin-top: 15px;"><strong>Última Evaluación General:</strong> <span id="ultimo_score" style="font-weight:bold; font-size: 1.5em; color:#e74c3c;">--</span> puntos</p>
+                
+                <div style="position: relative; height: 350px; width: 100%; margin-top: 20px;">
+                    <canvas id="graficaMedico"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variable para guardar la gráfica y poder borrarla si buscamos a otro paciente
+        let chartMedico = null;
+
+        function buscarPaciente() {
+            const id = document.getElementById('id_paciente').value;
+            const panel = document.getElementById('panelResultados');
+            const error = document.getElementById('error_busqueda');
+
+            // --- BASE DE DATOS SIMULADA ---
+            // Aquí tenemos 2 pacientes de prueba para el MVP
+            const baseDatos = {
+                "001": {
+                    nombre: "Juan Pérez",
+                    historialFechas: ['Hace 4 Sem.', 'Hace 3 Sem.', 'Hace 2 Sem.', 'Semana Pasada', 'Hoy'],
+                    historialScores: [45, 40, 34, 28, 25] // Muestra mejoría (baja el score)
+                },
+                "002": {
+                    nombre: "María García",
+                    historialFechas: ['Hace 4 Sem.', 'Hace 3 Sem.', 'Hace 2 Sem.', 'Semana Pasada', 'Hoy'],
+                    historialScores: [15, 18, 22, 20, 24] // Muestra un ligero empeoramiento
+                }
+            };
+
+            // Verificamos si el ID existe en nuestra base de datos simulada
+            if (baseDatos[id]) {
+                // Ocultamos error y mostramos el panel
+                error.style.display = 'none';
+                panel.style.display = 'block';
+                
+                const paciente = baseDatos[id];
+                
+                // Actualizamos los textos
+                document.getElementById('nombre_paciente').innerText = `Paciente: ${paciente.nombre}`;
+                document.getElementById('display_id').innerText = id;
+                
+                // Obtenemos el último score (el último elemento de la lista)
+                const ultimoScore = paciente.historialScores[paciente.historialScores.length - 1];
+                document.getElementById('ultimo_score').innerText = ultimoScore;
+
+                // --- DIBUJAR LA GRÁFICA MEDICA ---
+                const ctx = document.getElementById('graficaMedico').getContext('2d');
+                
+                // Si ya hay una gráfica de una búsqueda anterior, la destruimos para no encimarlas
+                if (chartMedico !== null) {
+                    chartMedico.destroy();
+                }
+
+                chartMedico = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: paciente.historialFechas,
+                        datasets: [{
+                            label: 'Evolución Clínica (Score Total)',
+                            data: paciente.historialScores,
+                            borderColor: '#e74c3c', // Rojo médico
+                            backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#c0392b',
+                            pointRadius: 5,
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Severidad de Síntomas (Puntos)' }
+                            }
+                        }
+                    }
+                });
+
+            } else {
+                // Si el ID no existe, mostramos el error y ocultamos el panel
+                error.style.display = 'block';
+                panel.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

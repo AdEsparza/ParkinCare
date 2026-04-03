@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ParkinCare - Registro</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Registro en ParkinCare</h1>
+        
+        <div class="card">
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button onclick="mostrarFormulario('paciente')">Soy Paciente</button>
+                <button onclick="mostrarFormulario('ps')" style="background-color: #95a5a6;">Soy Personal de Salud</button>
+            </div>
+
+            <div id="form_paciente">
+                <h2>Nuevo Paciente</h2>
+                <input type="text" id="p_nombre" placeholder="Nombre completo">
+                <input type="date" id="p_fecha_nac">
+                <input type="email" id="p_correo" placeholder="Correo electrónico">
+                <input type="password" id="p_password" placeholder="Nueva contraseña">
+                <button onclick="registrarPaciente()">Registrar Paciente</button>
+            </div>
+
+            <div id="form_ps" style="display: none;">
+                <h2>Nuevo Personal de Salud</h2>
+                <input type="text" id="ps_nombre" placeholder="Nombre completo">
+                <input type="text" id="ps_cedula" placeholder="Número de Cédula Profesional">
+                <input type="email" id="ps_correo" placeholder="Correo electrónico">
+                <input type="password" id="ps_password" placeholder="Nueva contraseña">
+                <button onclick="registrarPS()">Registrar PS</button>
+            </div>
+
+            <div id="resultado" style="margin-top: 15px; font-weight: bold;"></div>
+            
+            <p style="text-align: center; margin-top: 15px;">
+                <a href="/">Volver al Inicio de Sesión</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function mostrarFormulario(tipo) {
+            document.getElementById("form_paciente").style.display = tipo === 'paciente' ? 'block' : 'none';
+            document.getElementById("form_ps").style.display = tipo === 'ps' ? 'block' : 'none';
+        }
+
+        async function registrarPaciente() {
+            const datos = {
+                nombre: document.getElementById("p_nombre").value,
+                fecha_nacimiento: document.getElementById("p_fecha_nac").value,
+                correo: document.getElementById("p_correo").value,
+                password: document.getElementById("p_password").value
+            };
+            enviarRegistro("/registro/paciente", datos);
+        }
+
+        async function registrarPS() {
+            const datos = {
+                nombre: document.getElementById("ps_nombre").value,
+                correo: document.getElementById("ps_correo").value,
+                cedula: document.getElementById("ps_cedula").value,
+                password: document.getElementById("ps_password").value
+            };
+            enviarRegistro("/registro/ps", datos);
+        }
+
+        async function enviarRegistro(url, datos) {
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(datos)
+                });
+                const result = await response.json();
+                const resDiv = document.getElementById("resultado");
+                
+                // Atrapamos errores automáticos de FastAPI
+                if (result.detail) {
+                    resDiv.style.color = "red";
+                    resDiv.innerText = "Error del servidor: " + JSON.stringify(result.detail);
+                } 
+                // Atrapamos nuestros propios errores (ej. correo repetido)
+                else if (result.error) {
+                    resDiv.style.color = "red";
+                    resDiv.innerText = "Error: " + result.error;
+                } 
+                // Éxito
+                else {
+                    resDiv.style.color = "green";
+                    resDiv.innerText = `${result.mensaje}. Tu ID es: ${result.id}`;
+                }
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+    </script>
+</body>
+</html>

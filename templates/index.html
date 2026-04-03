@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ParkinCare - Iniciar Sesión</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>ParkinCare</h1>
+        
+        <div class="card">
+            <h2>Iniciar Sesión</h2>
+            
+            <label for="tipo_usuario">Soy:</label>
+            <select id="tipo_usuario" onchange="mostrarCampos()" style="width: 95%; padding: 10px; margin-bottom: 15px;">
+                <option value="paciente">Paciente</option>
+                <option value="ps">Personal de Salud (PS)</option>
+            </select>
+
+            <input type="email" id="correo" placeholder="Correo electrónico">
+            <input type="password" id="password" placeholder="Contraseña">
+                        
+            <button onclick="iniciarSesion()">Entrar</button>
+
+            <p style="text-align: center; margin-top: 15px;">
+                ¿No tienes cuenta? <a href="/vista-registro">Regístrate aquí</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function mostrarCampos() {
+            const tipo = document.getElementById("tipo_usuario").value;
+            const campoIdPaciente = document.getElementById("id_paciente");
+            
+            if (tipo === "ps") {
+                campoIdPaciente.style.display = "block";
+            } else {
+                campoIdPaciente.style.display = "none";
+            }
+        }
+
+        function iniciarSesion() {
+            const tipo = document.getElementById("tipo_usuario").value;
+            // Aquí en el futuro conectarás con un endpoint para validar correo y contraseña
+            // Por ahora, simularemos la redirección (Flujo 9)
+            
+            if (tipo === "paciente") {
+                window.location.href = "/dashboard-paciente";
+            } else {
+                window.location.href = "/dashboard-ps";
+            }
+        }
+    </script>
+</body>
+</html>
