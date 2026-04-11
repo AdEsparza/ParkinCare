@@ -34,12 +34,12 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # --- RUTAS DE NAVEGACIÓN (FRONT-END) ---
 
-# Ruta para la página de inicio de sesión (Flujo 1 y 9)
+# Ruta para la página de inicio de sesión
 @app.get("/")
 def home():
     return FileResponse("templates/index.html")
 
-# Ruta para la página de registro (Flujo 2)
+# Ruta para la página de registro 
 @app.get("/vista-registro")
 def vista_registro():
     return FileResponse("templates/registro.html")
@@ -117,7 +117,7 @@ async def registrar_ps(datos: dict):
         "id": id_formateado
     }
 
-# Para guardar evaluación
+# Ruta para guardar evaluación
 @app.post("/guardar_evaluacion")
 async def guardar_evaluacion(request: Request):
     form_data = await request.form()
@@ -141,16 +141,16 @@ async def guardar_evaluacion(request: Request):
     
 # --- RUTAS DE HISTORIA CLÍNICA ---
 
-# 1. Ruta para mostrar la página (traducir el Jinja2)
+# Ruta para mostrar la página (traducir el Jinja2)
 @app.get("/vista-historial")
 async def vista_historial(request: Request):
     return templates.TemplateResponse(request=request, name="historia_clinica.html")
 
-# 2. Ruta para recibir los datos por JSON desde JavaScript
+# Ruta para recibir los datos por JSON desde JavaScript
 @app.post("/guardar_historia")
 async def guardar_historia(datos: dict):
     # Aquí en el futuro guardarás esto en SQLite
-    print("📋 Nueva Historia Clínica recibida:")
+    print("Nueva Historia Clínica recibida:")
     print(datos)
     
     # Respondemos con éxito a JavaScript para que haga la redirección

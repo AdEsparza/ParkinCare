@@ -65,17 +65,17 @@ button:hover {
 .checkbox-item {
     font-size: 0.9em;
     display: flex;
-    align-items: center; /* Centra verticalmente la casilla con el texto */
-    gap: 8px; /* Espacio uniforme entre la casilla y el texto */
-    cursor: pointer; /* Cambia el mouse a una manita para mejor UX */
+    align-items: center; 
+    gap: 8px; 
+    cursor: pointer; 
 }
 
 /* Alineación de las casillas */
 .checkbox-item input[type="checkbox"] {
-    margin: 0; /* Elimina los márgenes rebeldes del navegador */
-    width: 16px; /* Fuerza a que todas las casillas midan lo mismo */
+    margin: 0; 
+    width: 16px; 
     height: 16px;
-    flex-shrink: 0; /* Evita que la casilla se aplaste si el texto es muy largo */
+    flex-shrink: 0; 
 }
 
 /* Alineación para los botones de opción (radio buttons) */
