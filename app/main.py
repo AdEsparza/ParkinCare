@@ -60,28 +60,6 @@ async def vista_sintomas(request: Request):
 
 # --- RUTAS DE API (BACK-END PARA RECIBIR DATOS) ---
 
-# Ruta para recibir los datos del formulario de Paciente
-@app.post("/registro/paciente")
-async def registrar_paciente(datos: dict):
-    # Por ahora solo imprimimos los datos en la terminal para que veas que llegan
-    print("Datos recibidos del paciente:", datos)
-    
-    # Simulamos que se guardó en la base de datos y devolvemos éxito
-    return {
-        "mensaje": "Paciente registrado correctamente", 
-        "id": 101 # ID simulado
-    }
-
-# Ruta para recibir los datos del formulario de Personal de Salud
-@app.post("/registro/ps")
-async def registrar_ps(datos: dict):
-    print("Datos recibidos del PS:", datos)
-    
-    return {
-        "mensaje": "Personal de salud registrado correctamente", 
-        "id": 201 # ID simulado
-    }
-
 # Contadores globales para simular el autoincremento de la base de datos
 contador_pacientes = 0
 contador_ps = 0
@@ -141,17 +119,15 @@ async def guardar_evaluacion(request: Request):
     
 # --- RUTAS DE HISTORIA CLÍNICA ---
 
-# Ruta para mostrar la página (traducir el Jinja2)
-@app.get("/vista-historial")
+# Ruta para mostrar la página 
+@app.get("/historia-clinica")
 async def vista_historial(request: Request):
     return templates.TemplateResponse(request=request, name="historia_clinica.html")
 
 # Ruta para recibir los datos por JSON desde JavaScript
 @app.post("/guardar_historia")
 async def guardar_historia(datos: dict):
-    # Aquí en el futuro guardarás esto en SQLite
-    print("Nueva Historia Clínica recibida:")
+    print("Nueva Historia Clínica guardada:", datos)
     print(datos)
     
-    # Respondemos con éxito a JavaScript para que haga la redirección
-    return {"mensaje": "Historia clínica procesada correctamente"}
+    return {"mensaje": "Historia clínica guardada correctamente"}

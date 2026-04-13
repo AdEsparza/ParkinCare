@@ -93,3 +93,24 @@ button:hover {
     height: 16px;
     flex-shrink: 0;
 }
+
+/* --- ESTILOS PARA EL MODO DE SOLO LECTURA --- */
+.modo-vista input,
+.modo-vista select,
+.modo-vista textarea,
+.modo-vista label,
+.modo-vista .checkbox-item {
+    pointer-events: none !important; /* Desactiva clics en campos y etiquetas */
+    cursor: default;
+}
+
+/* Asegurar que los checkboxes se vean pero parezcan desactivados */
+.modo-vista input[type="checkbox"],
+.modo-vista input[type="radio"] {
+    appearance: auto !important;
+    -webkit-appearance: auto !important;
+    opacity: 0.5; 
+    filter: grayscale(100%);
+}
+
+

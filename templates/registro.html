@@ -41,7 +41,7 @@
         </div>
     </div>
 
-    <script>
+  <script>
         function mostrarFormulario(tipo) {
             document.getElementById("form_paciente").style.display = tipo === 'paciente' ? 'block' : 'none';
             document.getElementById("form_ps").style.display = tipo === 'ps' ? 'block' : 'none';
@@ -87,10 +87,21 @@
                     resDiv.style.color = "red";
                     resDiv.innerText = "Error: " + result.error;
                 } 
-                // Éxito
+                // Éxito: Aquí hacemos la redirección dependiendo de quién se registró
                 else {
                     resDiv.style.color = "green";
-                    resDiv.innerText = `${result.mensaje}. Tu ID es: ${result.id}`;
+                    resDiv.innerText = "¡Registro exitoso!";
+            
+                    setTimeout(() => {
+                        if (url.includes("paciente")) {
+                            // PACIENTE NUEVO: Lo mandamos a la Historia Clínica
+                            // Nota: Verifica que "/historia-clinica" sea la ruta real de tu archivo en Python
+                            window.location.href = "/historia-clinica"; 
+                        } else {
+                            // PERSONAL DE SALUD NUEVO: Lo mandamos al inicio de sesión normal
+                            window.location.href = "/";
+                        }
+                    }, 1500);
                 }
             } catch (error) {
                 console.error("Error:", error);

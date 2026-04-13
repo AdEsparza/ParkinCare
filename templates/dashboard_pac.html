@@ -27,7 +27,7 @@
             <h2>Acciones Rápidas</h2>
             <button onclick="window.location.href='/vista-sintomas'" style="margin-bottom: 10px;">📝 Realizar Evaluación de Síntomas</button>
             <button onclick="window.location.href='/vista-ejercicios'" style="background: #e67e22; margin-bottom: 10px;">🏋️ Mis Ejercicios</button>
-            <button onclick="window.location.href='/vista-historial'" style="background: #9b59b6;">📋 Mi Historial Clínico</button>
+            <button onclick="window.location.href='/historia-clinica'" style="background: #9b59b6;">📋 Mi Historial Clínico</button>
         </div>
 
     </div>
@@ -37,16 +37,16 @@
         const parametrosURL = new URLSearchParams(window.location.search);
         const scoreNuevo = parametrosURL.get('score');
 
-        // --- DATOS SIMULADOS DEL HISTORIAL ---
+        // --- DATOS SIMULADOS DEL HISTORIAL PARA PRUEBA GRÁFICA ---
         // Simulación de que el paciente ya tiene 4 evaluaciones anteriores
         const fechas = ['Hace 4 Sem.', 'Hace 3 Sem.', 'Hace 2 Sem.', 'Semana Pasada'];
         const puntuaciones = [5, 7, 8, 10]; 
 
         if (scoreNuevo !== null) {
-            // Actualizamos el número grande de texto
+            // Actualizamos la puntuacion
             document.getElementById('puntuacion_total').innerText = scoreNuevo;
             
-            // Agregamos el nuevo resultado a nuestras listas para la gráfica
+            // Agregamos el nuevo resultado para la gráfica
             fechas.push('Hoy');
             puntuaciones.push(parseInt(scoreNuevo));
             

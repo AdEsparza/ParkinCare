@@ -7,64 +7,91 @@
 </head>
 <body>
     <div class="container" style="max-width: 650px;">
-    <div class="card">
-        <h2 style="text-align: center; color: #3498db;">Historia Clínica</h2>
-        <p style="text-align: center; font-size: 0.9em; color: #7f8c8d;">Por favor, completa la información para tu expediente médico.</p>
-        
-        <form id="formHistoria">
-            <div class="form-section">
-                <h3>Datos Generales y Físicos</h3>
-                <div class="grid-inputs">
-                    <input type="number" id="edad" placeholder="Edad" required>
-                    <select id="sexo" class="custom-select">
-                        <option value="" disabled selected>Sexo</option>
-                        <option value="M">Masculino</option>
-                        <option value="F">Femenino</option>
-                    </select>
-                    <input type="number" step="0.1" id="peso" placeholder="Peso (kg)" required>
-                    <input type="number" step="0.1" id="altura" placeholder="Altura (cm)" required>
-                </div>
-                <input type="text" id="estudios" placeholder="Nivel de estudios">
-                <input type="text" id="ocupacion" placeholder="Ocupación">
-            </div>
+        <div class="card" id="contenedorHistoria">
+            <h2 style="text-align: center; color: #3498db;">Historia Clínica</h2>
+            <p style="text-align: center; font-size: 0.9em; color: #7f8c8d;">Por favor, completa la información para tu expediente médico.</p>
+            
+            <form id="formHistoria">
+                <div class="form-section">
+                    <h3>Datos Generales y Físicos</h3>
+                    <div class="grid-inputs">
+                        <div style="display: flex; flex-direction: column;">
+                            <label style="font-size: 0.85em; color: #7f8c8d; margin-bottom: 5px;">Edad</label>
+                            <input type="number" id="edad" required>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column;">
+                            <label style="font-size: 0.85em; color: #7f8c8d; margin-bottom: 5px;">Sexo</label>
+                            <select id="sexo" class="custom-select" required>
+                                <option value="" disabled selected>Seleccione</option>
+                                <option value="M">Masculino</option>
+                                <option value="F">Femenino</option>
+                            </select>
+                        </div>
 
-            <div class="form-section">
-                <h3>Estilo de Vida</h3>
-                <div class="checkbox-group">
-                    <label class="checkbox-item"><input type="checkbox" id="tomas"> ¿Tomas alcohol?</label>
-                    <label class="checkbox-item"><input type="checkbox" id="fumas"> ¿Fumas?</label>
-                    <label class="checkbox-item"><input type="checkbox" id="ejercicio"> ¿Haces ejercicio?</label>
-                </div>
-                <input type="text" id="ludicas" placeholder="¿Actividades lúdicas? ¿Cuál?" style="margin-top:10px;">
-            </div>
+                        <div style="display: flex; flex-direction: column;">
+                            <label style="font-size: 0.85em; color: #7f8c8d; margin-bottom: 5px;">Peso (kg)</label>
+                            <input type="number" step="0.1" id="peso" required>
+                        </div>
 
-            <div class="form-section">
-                <h3>Antecedentes Familiares</h3>
-                <p style="font-size: 0.8em; margin-bottom: 10px;">¿Algún familiar directo sufre o sufrió de:</p>
-                <div class="checkbox-group">
-                    {% for enf in ['HTA', 'Diabetes 1', 'Diabetes 2', 'Cáncer', 'Cardiopatías', 'Artritis', 'Autoinmunes', 'Parkinson', 'Alzheimer', 'Renal', 'Depresión'] %}
-                    <label class="checkbox-item"><input type="checkbox" class="fam" value="{{ enf }}"> {{ enf }}</label>
-                    {% endfor %}
+                        <div style="display: flex; flex-direction: column;">
+                            <label style="font-size: 0.85em; color: #7f8c8d; margin-bottom: 5px;">Altura (cm)</label>
+                            <input type="number" step="0.1" id="altura" required>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; margin-top: 15px;">
+                        <label style="font-size: 0.85em; color: #7f8c8d; margin-bottom: 5px;">Nivel de estudios</label>
+                        <input type="text" id="estudios">
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; margin-top: 15px;">
+                        <label style="font-size: 0.85em; color: #7f8c8d; margin-bottom: 5px;">Ocupación</label>
+                        <input type="text" id="ocupacion">
+                    </div>
                 </div>
-            </div>
 
-            <div class="form-section">
-                <h3>Antecedentes Personales (Tus enfermedades)</h3>
-                <div class="checkbox-group">
-                    {% for enf in ['Fracturas', 'HTA', 'Diabetes 1', 'Diabetes 2', 'Cáncer', 'Cardiopatías', 'Artritis', 'Autoinmunes', 'Parkinson', 'Alzheimer', 'Renal', 'Depresión', 'Traumatismos'] %}
-                    <label class="checkbox-item"><input type="checkbox" class="pers" value="{{ enf }}"> {{ enf }}</label>
-                    {% endfor %}
+                <div class="form-section">
+                    <h3>Estilo de Vida</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item"><input type="checkbox" id="tomas"> ¿Tomas alcohol?</label>
+                        <label class="checkbox-item"><input type="checkbox" id="fumas"> ¿Fumas?</label>
+                        <label class="checkbox-item"><input type="checkbox" id="ejercicio"> ¿Haces ejercicio?</label>
+                    </div>
+                    <div style="display: flex; flex-direction: column; margin-top: 15px;">
+                        <label style="font-size: 0.85em; color: #7f8c8d; margin-bottom: 5px;">¿Actividades lúdicas? ¿Cuáles?</label>
+                        <input type="text" id="ludicas">
+                    </div>
                 </div>
-            </div>
 
-            <button type="button" onclick="enviarHistoria()" style="background: #27ae60;">Guardar Historia Clínica</button>
-        </form>
+                <div class="form-section">
+                    <h3>Antecedentes Familiares</h3>
+                    <p style="font-size: 0.8em; margin-bottom: 10px;">¿Algún familiar directo sufre o sufrió de:</p>
+                    <div class="checkbox-group">
+                        {% for enf in ['HTA', 'Diabetes 1', 'Diabetes 2', 'Cáncer', 'Cardiopatías', 'Artritis', 'Autoinmunes', 'Parkinson', 'Alzheimer', 'Renal', 'Depresión'] %}
+                        <label class="checkbox-item"><input type="checkbox" class="fam" value="{{ enf }}"> {{ enf }}</label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Antecedentes Personales (Tus enfermedades)</h3>
+                    <div class="checkbox-group">
+                        {% for enf in ['Fracturas', 'HTA', 'Diabetes 1', 'Diabetes 2', 'Cáncer', 'Cardiopatías', 'Artritis', 'Autoinmunes', 'Parkinson', 'Alzheimer', 'Renal', 'Depresión', 'Traumatismos'] %}
+                        <label class="checkbox-item"><input type="checkbox" class="pers" value="{{ enf }}"> {{ enf }}</label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <button type="button" id="btnGuardar" onclick="enviarHistoria()" style="background: #27ae60; width: 100%;">💾 Guardar Historia Clínica</button>
+                
+                <button type="button" id="btnEditar" onclick="activarEdicion()" style="background: #f39c12; width: 100%; display: none; margin-top: 15px;">✏️ Editar o actualizar datos</button>
+            </form>
+        </div>
     </div>
-</div>
 
     <script>
     async function enviarHistoria() {
-        // CORRECCIÓN: Agregamos los backticks (`) alrededor del selector
         const obtenerChecks = (clase) => 
             Array.from(document.querySelectorAll(`.${clase}:checked`)).map(c => c.value);
 
@@ -76,8 +103,8 @@
             altura: document.getElementById('altura').value,
             estudios: document.getElementById('estudios').value,
             ocupacion: document.getElementById('ocupacion').value,
-            toma_alcohol: document.getElementById('toma').checked,
-            fuma: document.getElementById('fuma').checked,
+            toma_alcohol: document.getElementById('tomas').checked, 
+            fuma: document.getElementById('fumas').checked, 
             ejercicio: document.getElementById('ejercicio').checked,
             actividades_ludicas: document.getElementById('ludicas').value,
             antecedentes_familiares: obtenerChecks('fam'),
@@ -92,11 +119,26 @@
         
         if(response.ok) {
             alert("Historia clínica guardada con éxito");
-            // Redirigimos al paciente de vuelta a su panel
-            window.location.href = "/dashboard-paciente";
+            
+            const vieneDeRegistro = document.referrer.includes('registro');
+
+            if (vieneDeRegistro) {
+                window.location.href = "/vista-sintomas"; 
+            } else {
+                document.getElementById('contenedorHistoria').classList.add('modo-vista');
+                document.getElementById('btnGuardar').style.display = 'none';
+                document.getElementById('btnEditar').style.display = 'block';
+            }
+            
         } else {
             alert("Hubo un error al guardar la historia clínica");
         }
+    }
+
+    function activarEdicion() {
+        document.getElementById('contenedorHistoria').classList.remove('modo-vista');
+        document.getElementById('btnGuardar').style.display = 'block'; 
+        document.getElementById('btnEditar').style.display = 'none'; 
     }
     </script>
         
