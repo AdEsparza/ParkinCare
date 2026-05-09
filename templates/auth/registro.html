@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ParkinCare - Registro</title>
+    
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/auth/registro.css">
+</head>
+<body>
+    {% include 'components/banner.html' %}
+
+    <div class="container">
+        <h1 style="color: var(--color-parkin); text-align: center;">Registro en ParkinCare</h1>
+        
+        <div class="card">
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button type="button" id="btn_tab_paciente" onclick="mostrarFormulario('paciente')" style="flex: 1; background-color: var(--color-parkin); color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s;">Soy Paciente</button>
+                <button type="button" id="btn_tab_ps" onclick="mostrarFormulario('ps')" style="flex: 1; background-color: #95a5a6; color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s;">Soy Personal de Salud</button>
+            </div>
+
+            <form id="form_paciente" onsubmit="registrarPaciente(event)">
+                <h2 style="color: #2c3e50;">Nuevo Paciente</h2>
+                <input type="text" id="p_nombre" placeholder="Nombre completo" required pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+" title="Solo se aceptan letras y espacios">
+                <input type="date" id="p_fecha_nac" required>
+                <input type="email" id="p_correo" placeholder="ejemplo@correo.com" required>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <input type="password" id="p_password" placeholder="Nueva contraseña" required style="width: 100%; margin: 0;">
+                    <button type="button" onclick="togglePassword('p_password')" style="white-space: nowrap; padding: 10px; background-color: #ecf0f1; color: #2c3e50; border: 1px solid #bdc3c7; cursor: pointer; border-radius: 4px;">👁️ Ver</button>
+                </div>  
+                
+                <button type="submit" style="background-color: var(--color-parkin); color: white; width: 100%; padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1.1em;">Registrar Paciente</button>
+            </form>
+
+            <form id="form_ps" onsubmit="registrarPS(event)" style="display: none;">
+                <h2 style="color: #2c3e50;">Nuevo Personal de Salud</h2>
+                <input type="text" id="ps_nombre" placeholder="Nombre completo" required pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+" title="Solo se aceptan letras y espacios">
+                <input type="text" id="ps_cedula" placeholder="Número de Cédula Profesional" required pattern="[0-9]+" title="Solo se aceptan números" minlength="7" maxlength="8">
+                <input type="email" id="ps_correo" placeholder="ejemplo@correo.com" required>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <input type="password" id="ps_password" placeholder="Nueva contraseña" required style="width: 100%; margin: 0;">
+                    <button type="button" onclick="togglePassword('ps_password')" style="white-space: nowrap; padding: 10px; background-color: #ecf0f1; color: #2c3e50; border: 1px solid #bdc3c7; cursor: pointer; border-radius: 4px;">👁️ Ver</button>
+                </div>
+                <button type="submit" style="background-color: #9b59b6; color: white; width: 100%; padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1.1em;">Registrar PS</button>
+            </form>
+
+            <div id="resultado" style="margin-top: 15px; font-weight: bold; text-align: center;"></div>
+            
+            <p style="text-align: center; margin-top: 20px;">
+                <a href="/" style="color: var(--color-parkin); font-weight: bold; text-decoration: none;">Volver al Inicio de Sesión</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // --- FUNCIONES DEL BANNER ---
+        function abrirSobreNosotros() { document.getElementById("modalSobreNosotros").style.display = "block"; }
+        function cerrarSobreNosotros() { document.getElementById("modalSobreNosotros").style.display = "none"; }
+        function cerrarSesion() { localStorage.clear(); window.location.href = "/"; }
+
+        // --- FUNCIONES DEL REGISTRO ---
+        function mostrarFormulario(tipo) {
+            const formPaciente = document.getElementById("form_paciente");
+            const formPS = document.getElementById("form_ps");
+            const btnPaciente = document.getElementById("btn_tab_paciente");
+            const btnPS = document.getElementById("btn_tab_ps");
+
+            if (tipo === 'paciente') {
+                formPaciente.style.display = 'block';
+                formPS.style.display = 'none';
+                btnPaciente.style.backgroundColor = 'var(--color-parkin)';
+                btnPS.style.backgroundColor = '#95a5a6';
+            } else {
+                formPaciente.style.display = 'none';
+                formPS.style.display = 'block';
+                btnPaciente.style.backgroundColor = '#95a5a6';
+                btnPS.style.backgroundColor = '#9b59b6'; // Un color morado para diferenciar al profesional
+            }
+            
+            document.getElementById("resultado").innerText = ""; 
+        }
+
+        function togglePassword(idCampo) {
+            const campo = document.getElementById(idCampo);
+    
+            if (campo.type === "password") {
+                campo.type = "text";
+            } else {
+                campo.type = "password";
+            }
+        }
+        
+        async function registrarPaciente(event) {
+            event.preventDefault();
+
+            const datos = {
+                nombre: document.getElementById("p_nombre").value,
+                fecha_nacimiento: document.getElementById("p_fecha_nac").value,
+                correo: document.getElementById("p_correo").value,
+                password: document.getElementById("p_password").value
+            };
+            enviarRegistro("/registro/paciente", datos, "paciente");
+        }
+
+        async function registrarPS(event) {
+            event.preventDefault(); 
+
+            const datos = {
+                nombre: document.getElementById("ps_nombre").value,
+                correo: document.getElementById("ps_correo").value,
+                cedula: document.getElementById("ps_cedula").value,
+                password: document.getElementById("ps_password").value
+            };
+            enviarRegistro("/registro/ps", datos, "profesional");
+        }
+
+        async function enviarRegistro(url, datos, tipoUsuario) {
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(datos)
+                });
+                
+                const result = await response.json();
+                const resDiv = document.getElementById("resultado");
+                
+                if (!response.ok) {
+                    resDiv.style.color = "red";
+                    resDiv.innerText = "Error: " + result.detail;
+                } 
+                else {
+                    resDiv.style.color = "green";
+                    resDiv.innerText = "¡Registro exitoso! Tu ID es: " + result.id;
+    
+                    localStorage.setItem("usuario_id", result.id);
+                    localStorage.setItem("usuario_nombre", datos.nombre);
+                    localStorage.setItem("usuario_tipo", tipoUsuario);
+
+                    setTimeout(() => {
+                        if (tipoUsuario === "paciente") {
+                            window.location.href = "/historia-clinica"; 
+                        } else {
+                            window.location.href = "/";
+                        }
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById("resultado").style.color = "red";
+                document.getElementById("resultado").innerText = "Error de conexión con el servidor.";
+            }
+        }
+    </script>
+</body>
+</html>

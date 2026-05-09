@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Ejercicios - ParkinCare</title>
+    
+    <link rel="stylesheet" href="/static/css/global.css">
+    <style>
+        /* Estilos específicos del reproductor */
+        .video-container { margin-top: 20px; background: #000; border-radius: 8px; overflow: hidden; }
+        video { width: 100%; display: block; }
+        
+        .info-ejercicio { background: #ecf0f1; padding: 15px; border-radius: 8px; margin-top: 15px; }
+        .info-ejercicio h2 { margin: 0 0 10px 0; color: #34495e; }
+        .info-ejercicio p { margin: 0; color: #7f8c8d; font-size: 1.1em; line-height: 1.5; }
+
+        /* Estilos de la lista de botones */
+        .lista-ejercicios { margin-top: 30px; display: flex; flex-direction: column; gap: 15px; }
+        .btn-ejercicio { 
+            background: #3498db; color: white; border: none; padding: 15px 20px; 
+            font-size: 1.2em; border-radius: 8px; cursor: pointer; text-align: left;
+            transition: background 0.3s; font-weight: bold;
+        }
+        .btn-ejercicio:hover { background: #2980b9; }
+        .btn-ejercicio.activo { background: var(--color-parkin); } /* Usa el verde global cuando está seleccionado */
+    </style>
+</head>
+<body>
+    {% include 'components/banner.html' %}
+
+    <div class="container">
+        <button type="button" onclick="history.back()" style="background-color: transparent; color: var(--color-parkin); border: 2px solid var(--color-parkin); padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; transition: 0.3s; width: auto; margin-bottom: 20px;">
+        ⬅️ Regresar
+        </button>
+        
+        <h1 style="color: var(--color-parkin); text-align: center;">Mi Rutina de Ejercicios</h1>
+
+        <div class="video-container">
+            <video id="reproductor" controls>
+                <source id="fuente-video" src="" type="video/mp4">
+                Tu navegador no soporta la reproducción de videos.
+            </video>
+        </div>
+
+        <div class="info-ejercicio" id="info-ejercicio" style="display: none;">
+            <h2 id="titulo-ejercicio">--</h2>
+            <p id="desc-ejercicio">--</p>
+        </div>
+
+        <div class="lista-ejercicios" id="contenedor-botones">
+            <p style="text-align: center; color: #7f8c8d; font-size: 1.2em;">Buscando tus ejercicios asignados...</p>
+        </div>
+    </div>
+
+    <script>
+        // --- FUNCIONES DEL BANNER ---
+        function abrirSobreNosotros() { document.getElementById("modalSobreNosotros").style.display = "block"; }
+        function cerrarSobreNosotros() { document.getElementById("modalSobreNosotros").style.display = "none"; }
+        function cerrarSesion() { localStorage.clear(); window.location.href = "/"; }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            let pacienteId = urlParams.get('paciente') || localStorage.getItem("usuario_id");
+            
+            if (!pacienteId) {
+                alert("No se pudo identificar al paciente. Por favor, inicia sesión de nuevo.");
+                window.location.href = "/";
+                return;
+            } 
+
+            try {
+                const respuesta = await fetch(`/api/rutina/${pacienteId}`);
+                const rutina = await respuesta.json();
+                const contenedor = document.getElementById('contenedor-botones');
+
+                if (rutina.length === 0) {
+                    contenedor.innerHTML = '<p style="text-align: center; color: #e74c3c; font-size: 1.2em; font-weight: bold;">Tu médico aún no te ha asignado ejercicios.</p>';
+                    return;
+                }
+
+                contenedor.innerHTML = ''; 
+
+                rutina.forEach((ejercicio, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-ejercicio';
+                    btn.innerText = `▶ ${ejercicio.nombre}`;
+                    
+                    btn.onclick = () => reproducirVideo(ejercicio, btn);
+                    
+                    contenedor.appendChild(btn);
+
+                    if (index === 0) {
+                        reproducirVideo(ejercicio, btn);
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById('contenedor-botones').innerHTML = '<p style="color:red;">Error al cargar la rutina.</p>';
+            }
+        });
+
+        function reproducirVideo(ejercicio, botonClicado) {
+            const video = document.getElementById('reproductor');
+            const source = document.getElementById('fuente-video');
+            
+            source.src = `/static/videos/${ejercicio.video_url}`;
+            video.load(); 
+            video.play(); 
+            
+            document.getElementById('info-ejercicio').style.display = 'block';
+            document.getElementById('titulo-ejercicio').innerText = ejercicio.nombre;
+            document.getElementById('desc-ejercicio').innerText = ejercicio.descripcion;
+
+            const botones = document.querySelectorAll('.btn-ejercicio');
+            botones.forEach(b => b.classList.remove('activo'));
+            botonClicado.classList.add('activo');
+        }
+    </script>
+</body>
+</html>

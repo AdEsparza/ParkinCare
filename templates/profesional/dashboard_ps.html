@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ParkinCare - Dashboard Médico</title>
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/profesional/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Estilos rápidos para la tabla de desglose */
+        .tabla-desglose { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .tabla-desglose th, .tabla-desglose td { border: 1px solid #bdc3c7; padding: 8px; text-align: left; }
+        .tabla-desglose th { background-color: #ecf0f1; }
+        .badge { background: #3498db; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.9em; float: right; }
+    </style>
+</head>
+<body>
+    {% include 'components/banner.html' %}
+
+    <div class="container" style="max-width: 900px; margin: 0 auto; padding: 20px;">
+        <h1 style="text-align: center; color: var(--color-parkin); margin-bottom: 30px;">Panel Médico - ParkinCare</h1>
+
+        <div class="card" style="padding: 20px; border-radius: 8px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <h2 style="color: var(--color-parkin);">Buscador de Pacientes</h2>
+            <p style="color: #7f8c8d; font-size: 0.9em; margin-bottom: 15px;">Ingrese el ID único del paciente.</p>
+            
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="id_paciente" placeholder="ID del paciente..." style="padding: 10px; width: 60%; border: 1px solid #ccc; border-radius: 4px;">
+                <button onclick="buscarPacienteReal()" style="padding: 10px 20px; background: var(--color-parkin); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Buscar Historial</button>
+            </div>
+            
+            <p id="error_busqueda" style="color: #e74c3c; display: none; margin-top: 10px; font-weight: bold;">Paciente no encontrado o sin evaluaciones registradas.</p>
+        </div>
+
+        <div id="panelResultados" style="display: none; margin-top: 20px;">
+            <div class="card" style="padding: 20px; border-radius: 8px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px;">
+                    <div>
+                    <h2 id="nombre_paciente" style="margin: 0; color: #2c3e50;">Paciente: --</h2>
+                    <p style="margin: 5px 0 0 0; color: #7f8c8d; font-size: 0.95em;">Edad: <span id="edad_paciente" style="font-weight: bold; color: #34495e;">--</span> años</p>
+                    </div>
+                    <span style="background: var(--color-parkin); color: white; padding: 5px 15px; border-radius: 15px; font-weight: bold; height: fit-content;">
+                        ID: <span id="display_id">--</span>
+                    </span>    
+                </div>
+                
+                <p style="margin-top: 15px; font-size: 1.1em;"><strong>Última Evaluación General:</strong> <span id="ultimo_score" style="font-weight:bold; font-size: 1.5em; color:#e74c3c;">--</span> puntos</p>
+                
+                <div style="position: relative; height: 350px; width: 100%; margin-top: 20px; margin-bottom: 30px;">
+                    <canvas id="graficaMedico"></canvas>
+                </div>
+
+                <div id="seccion_desglose" style="display: none; border-top: 2px solid #ecf0f1; padding-top: 20px;">
+                    <h3 style="color: #2c3e50;">Desglose de la Última Evaluación</h3>
+                    <p style="color: #7f8c8d; font-size: 0.9em;">Fecha: <span id="fecha_desglose">--</span></p>
+                    <div id="contenedor_tabla"></div>
+                </div>
+
+                <div style="margin-top: 30px; border-top: 2px solid #ecf0f1; padding-top: 30px;">
+                    <h3 style="margin-top: 0; margin-bottom: 25px; color: #2c3e50; text-align: center;">Acciones Rápidas</h3>
+                    
+                    <div style="display: flex; gap: 20px; width: 100%; max-width: 600px; margin: 0 auto; justify-content: center;">
+                        
+                        <button onclick="verHistoriaClinica()" style="background-color: #2980b9; color: white; width: 48%; height: 80px; border-radius: 10px; border: none; font-weight: bold; font-size: 1.05em; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s;">
+                            Ver Historia Clínica
+                        </button>
+                        
+                        <button onclick="gestionarEjercicios()" style="background-color: #16a085; color: white; width: 48%; height: 80px; border-radius: 10px; border: none; font-weight: bold; font-size: 1.05em; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s;">
+                            Gestión de Ejercicios
+                        </button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- FUNCIONES DEL BANNER ---
+        function abrirSobreNosotros() { document.getElementById("modalSobreNosotros").style.display = "block"; }
+        function cerrarSobreNosotros() { document.getElementById("modalSobreNosotros").style.display = "none"; }
+        function cerrarSesion() { localStorage.clear(); window.location.href = "/"; }
+
+        let chartMedico = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const pacienteId = urlParams.get('paciente');
+            
+            if (pacienteId) {
+                document.getElementById('id_paciente').value = pacienteId;
+                buscarPacienteReal();
+            }
+        });
+
+        async function buscarPacienteReal() {
+            const idPaciente = document.getElementById('id_paciente').value.trim();
+            const panel = document.getElementById('panelResultados');
+            const error = document.getElementById('error_busqueda');
+
+            if (!idPaciente) return;
+
+            try {
+                const respuesta = await fetch(`/profesional/paciente_evaluaciones/${idPaciente}`);
+                
+                if (!respuesta.ok) {
+                    throw new Error('No encontrado');
+                }
+
+                const datos = await respuesta.json();
+                
+                error.style.display = 'none';
+                panel.style.display = 'block';
+                
+                document.getElementById('display_id').innerText = idPaciente;
+                document.getElementById('nombre_paciente').innerText = `Paciente: ${datos.nombre}`;
+                document.getElementById('edad_paciente').innerText = datos.edad;
+
+                const fechas = datos.fechas || [];
+                const puntuaciones = datos.puntuaciones || [];
+                
+                if (puntuaciones.length > 0) {
+                    document.getElementById('ultimo_score').innerText = puntuaciones[puntuaciones.length - 1];
+                } else {
+                    document.getElementById('ultimo_score').innerText = "0";
+                }
+
+                dibujarGrafica(fechas, puntuaciones);
+
+                if (datos.ultimo_detalle) {
+                    mostrarDesglose(datos.ultimo_detalle, fechas[fechas.length - 1]);
+                } else {
+                    document.getElementById('seccion_desglose').style.display = 'none';
+                }
+
+            } catch (err) {
+                console.error(err);
+                error.style.display = 'block';
+                panel.style.display = 'none';
+            }
+        }
+
+        function dibujarGrafica(fechas, puntuaciones) {
+            const ctx = document.getElementById('graficaMedico').getContext('2d');
+            if (chartMedico !== null) chartMedico.destroy();
+
+            chartMedico = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: fechas,
+                    datasets: [{
+                        label: 'Evolución Clínica (Score Total)',
+                        data: puntuaciones,
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#c0392b',
+                        pointRadius: 5,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Severidad' } } }
+                }
+            });
+        }
+
+        function mostrarDesglose(detalleJson, fecha) {
+            const seccion = document.getElementById('seccion_desglose');
+            const contenedor = document.getElementById('contenedor_tabla');
+            document.getElementById('fecha_desglose').innerText = fecha;
+            
+            seccion.style.display = 'block';
+            
+            try {
+                let detalle;
+                if (typeof detalleJson === 'string') {
+                    detalle = JSON.parse(detalleJson);
+                } else {
+                    detalle = detalleJson; 
+                }
+
+                let html = '<table class="tabla-desglose"><tr><th>Síntoma / Pregunta</th><th>Puntuación</th></tr>';
+                
+                const diccionario = {
+                    "sentimiento_general": "Sentimiento General",
+                    "motor_1": "Temblores", "motor_2": "Rigidez muscular", "motor_3": "Lentitud de movimiento", "motor_4": "Problemas para caminar", "motor_5": "Problemas de equilibrio",
+                    "nomotor_1": "Problemas de sueño", "nomotor_2": "Fatiga", "nomotor_3": "Estreñimiento", "nomotor_4": "Mareos", "nomotor_5": "Cambios de ánimo",
+                    "independencia": "Nivel de Independencia",
+                    "cognitivo_1": "Problemas de memoria", "cognitivo_2": "Dificultad concentración", "cognitivo_3": "Tristeza", "cognitivo_4": "Ansiedad"
+                };
+
+                for (const [clave, valor] of Object.entries(detalle)) {
+                    const nombreBonito = diccionario[clave] || clave;
+                    html += `<tr><td>${nombreBonito}</td><td><span class="badge">${valor}</span></td></tr>`;
+                }
+                html += '</table>';
+                contenedor.innerHTML = html;
+
+            } catch (e) {
+                console.error("Error al mostrar desglose:", e);
+                contenedor.innerHTML = "<p>No se pudo cargar el detalle de la evaluación.</p>";
+            }
+        }
+
+        function verHistoriaClinica() {
+            const idPaciente = document.getElementById('display_id').innerText;
+            if(idPaciente && idPaciente !== "--") {
+                window.location.href = `/profesional/historia-clinica/${idPaciente}`;
+            }
+        }
+
+        function gestionarEjercicios() {
+            const idPaciente = document.getElementById('display_id').innerText;
+            if(idPaciente && idPaciente !== "--") {
+                 window.location.href = `/asignar-ejercicios?paciente=${idPaciente}`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ParkinCare - Mi Dashboard</title>
+    
+    <link rel="stylesheet" href="/static/css/global.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    {% include 'components/banner.html' %}
+
+    <div class="container">
+        
+        <div style="margin-bottom: 25px;">
+            <h1 style="margin: 0;">Hola, <span id="display_nombre" style="color: var(--color-parkin);">Paciente</span></h1>
+            <p style="margin: 5px 0 0 0; color: #7f8c8d;">ID: <span id="display_id" style="font-weight: bold;">---</span></p>
+        </div>
+
+        <div class="card">
+            <h2>Mi Evolución</h2>
+            <p><strong>Última Evaluación:</strong> <span id="puntuacion_total" style="font-weight:bold; font-size: 1.5em; color: var(--color-care);">--</span> puntos</p>
+            
+            <div style="position: relative; height: 300px; width: 100%; margin-top: 20px;">
+                <canvas id="graficaEvolucion"></canvas>
+            </div>
+            <p style="color: #7f8c8d; font-size: 0.85em; margin-top: 15px; text-align: center;">
+                Nota: Los puntos reflejan la presencia de síntomas en las últimas 2 semanas.
+            </p>
+        </div>
+
+        <div class="acciones-rapidas-container" style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px;">
+            <h3 style="margin-bottom: 20px; color: #2c3e50; text-align: center;">Acciones Rápidas</h3>
+            <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
+            
+                <button onclick="window.location.href='/vista-sintomas'" style="background-color: #0c5756; color: white; width: 100%; max-width: 450px; height: 80px; border-radius: 10px; border: none; font-weight: bold; font-size: 1.1em; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s;">
+                    Realizar Evaluación de Síntomas
+                </button>
+
+                <div style="display: flex; gap: 15px; width: 100%; max-width: 450px; justify-content: space-between;">
+                    <button onclick="irAEjercicios()" style="background-color: #e67e22; color: white; width: 48%; height: 80px; border-radius: 10px; border: none; font-weight: bold; font-size: 1.05em; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s;">
+                        Mis Ejercicios
+                    </button> 
+                
+                    <button onclick="window.location.href='/historia-clinica'" style="background-color: #9b59b6; color: white; width: 48%; height: 80px; border-radius: 10px; border: none; font-weight: bold; font-size: 1.05em; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s;">
+                        Mi Historial Clínico
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 50px; text-align: center; border-top: 1px solid #ddd; padding-top: 20px;">
+            <p style="font-size: 0.85em; color: #7f8c8d; margin-bottom: 10px;">¿Deseas dejar de usar la plataforma?</p>
+            <button type="button" onclick="eliminarCuenta()" style="background: var(--color-error); width: auto; padding: 10px 20px;">
+                Eliminar mi cuenta
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const nombreUsuario = localStorage.getItem("usuario_nombre");
+            const usuarioId = localStorage.getItem("usuario_id");
+
+            if (nombreUsuario) document.getElementById('display_nombre').innerText = nombreUsuario;
+            if (usuarioId) document.getElementById('display_id').innerText = usuarioId;
+
+            // Limpieza de URL si viene de un formulario
+            const parametrosURL = new URLSearchParams(window.location.search);
+            if (parametrosURL.get('score') !== null) {
+                window.history.replaceState({}, document.title, "/dashboard-paciente");
+            }
+
+            // Carga de Datos para la Gráfica
+            try {
+                const respuesta = await fetch(`/obtener_evaluaciones/${usuarioId}`);
+                const datos = await respuesta.json();
+                
+                if (datos.puntuaciones && datos.puntuaciones.length > 0) {
+                    document.getElementById('puntuacion_total').innerText = datos.puntuaciones[datos.puntuaciones.length - 1];
+                }
+
+                const ctx = document.getElementById('graficaEvolucion').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: datos.fechas || [],
+                        datasets: [{
+                            label: 'Puntos de Síntomas',
+                            data: datos.puntuaciones || [],
+                            borderColor: '#9b59b6',
+                            backgroundColor: 'rgba(155, 89, 182, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            } catch (e) { console.error("Error cargando gráfica", e); }
+        });
+
+        // --- FUNCIONES DEL BANNER Y MODAL ---
+        function abrirSobreNosotros() {
+            document.getElementById("modalSobreNosotros").style.display = "block";
+        }
+        function cerrarSobreNosotros() {
+            document.getElementById("modalSobreNosotros").style.display = "none";
+        }
+
+        // --- LÓGICA DE NEGOCIO ---
+        function irAEjercicios() {
+            const id = localStorage.getItem("usuario_id");
+            if (id) window.location.href = `/vista-ejercicios?paciente=${id}`;
+        }
+
+        function cerrarSesion() {
+            localStorage.clear();
+            window.location.href = "/";
+        }
+
+        async function eliminarCuenta() {
+            const confirmacion = confirm("¿Estás seguro? Tus datos personales serán borrados, pero tu historial se anonimizará para investigación. Esta acción no se puede deshacer.");
+            if (!confirmacion) return;
+
+            const id = localStorage.getItem("usuario_id");
+            try {
+                const res = await fetch(`/eliminar_cuenta/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    alert("Cuenta eliminada correctamente.");
+                    cerrarSesion();
+                }
+            } catch (e) { alert("Error al conectar con el servidor."); }
+        }
+    </script>
+</body>
+</html>

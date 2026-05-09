@@ -14,14 +14,16 @@ class PSRegistro(BaseModel):
     password: str
 
 class RegistroSintoma(BaseModel):
-    paciente_id: int
+    paciente_id: str
     fecha: str
-    nivel_temblor: int  # Ej. escala del 1 al 10
-    nivel_rigidez: int  # Ej. escala del 1 al 10
-    notas: str
+    temblor: int
+    marcha: int
+    rigidez: int
+    cognitivo: int
+    puntuacion_total: int
 
 class HistoriaClinica(BaseModel):
-    paciente_id: int
+    paciente_id: str
     edad: int
     sexo: str
     peso: float

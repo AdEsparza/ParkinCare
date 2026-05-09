@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ParkinCare - Iniciar Sesión</title>
+    
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/auth/login.css">
+</head>
+<body>
+    {% include 'components/banner.html' %}
+
+    <div class="container">
+        <h1 style="color: var(--color-parkin); text-align: center;">ParkinCare</h1>
+        
+        <div class="card">
+            <h2 style="color: #2c3e50;">Iniciar Sesión</h2>
+            
+            <form id="form-login">
+                
+                <input type="email" id="correo" placeholder="ejemplo@correo.com" required>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <input type="password" id="password" placeholder="Contraseña" required style="width: 100%; margin: 0;">
+                    <button type="button" onclick="togglePassword('password')" style="white-space: nowrap; padding: 10px; background-color: #ecf0f1; color: #2c3e50; border: 1px solid #bdc3c7; cursor: pointer; border-radius: 4px;">👁️ Ver</button>
+                </div>
+                            
+                <button type="submit" style="background-color: var(--color-parkin); color: white; width: 100%; padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1.1em;">Entrar</button>
+            </form>
+
+            <p style="text-align: center; margin-top: 15px; color: #7f8c8d;">
+                ¿No tienes cuenta? <a href="/vista-registro" style="color: var(--color-parkin); font-weight: bold; text-decoration: none;">Regístrate aquí</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // --- FUNCIONES DEL BANNER ---
+        function abrirSobreNosotros() { document.getElementById("modalSobreNosotros").style.display = "block"; }
+        function cerrarSobreNosotros() { document.getElementById("modalSobreNosotros").style.display = "none"; }
+        function cerrarSesion() { localStorage.clear(); window.location.href = "/"; }
+
+        // --- FUNCIONES DEL LOGIN ---
+        function togglePassword(idCampo) {
+            const campo = document.getElementById(idCampo);
+            
+            if (campo.type === "password") {
+                campo.type = "text";
+            } else {
+                campo.type = "password";
+            }
+        }
+
+        document.getElementById("form-login").addEventListener("submit", async function(event) {
+            event.preventDefault(); 
+
+            const correo = document.getElementById("correo").value;
+            const password = document.getElementById("password").value;
+
+            try {
+                const respuesta = await fetch("/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ correo: correo, password: password })
+                });
+
+                const data = await respuesta.json();
+
+                if (respuesta.ok) {
+                    localStorage.setItem("usuario_id", data.id);
+                    localStorage.setItem("usuario_nombre", data.nombre);
+                    localStorage.setItem("usuario_tipo", data.tipo);
+
+                    if (data.tipo === "paciente") {
+                        window.location.href = "/dashboard-paciente";
+                    } else {
+                        window.location.href = "/dashboard-ps";
+                    }
+                } else {
+                    alert(data.detail);
+                }
+            } catch (error) {
+                console.error("Error de conexión:", error);
+                alert("Hubo un error al intentar conectarse al servidor.");
+            }
+        });
+    </script>
+</body>
+</html>

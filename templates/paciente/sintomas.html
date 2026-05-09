@@ -3,12 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>Evaluación - ParkinCare</title>
-    <link rel="stylesheet" href="/static/style.css">
+    
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/paciente/sintomas.css">
 </head>
 <body>
-    <div class="container" style="max-width: 650px;">
+    {% include 'components/banner.html' %}
+
+    <div class="container">
+        <button onclick="history.back()" style="background-color: transparent; color: var(--color-parkin); border: 2px solid var(--color-parkin); padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; transition: 0.3s; width: auto; margin-bottom: 20px;">
+        ⬅️ Regresar
+        </button>
+
         <div class="card">
-            <h2 style="text-align: center; color: #3498db;">Evaluación de Seguimiento</h2>
+            <h2 style="text-align: center; color: var(--color-parkin);">Evaluación de Seguimiento</h2>
             <p style="text-align: center; font-size: 0.9em; color: #7f8c8d;">Registra tus síntomas de las últimas 2 semanas.</p>
 
             <form action="/guardar_evaluacion" method="post" id="formSintomas">
@@ -67,10 +75,27 @@
                         {% endfor %}
                     </div>
                 </div>
-
-                <button type="submit" style="background: #3498db; width: 100%; margin-top: 10px;">Enviar Evaluación</button>
+                <input type="hidden" id="paciente_id" name="paciente_id">
+                
+                <button type="submit" style="background: var(--color-parkin); margin-top: 10px;">Enviar Evaluación</button>
             </form>
         </div>
     </div>
+
+    <script>
+        // --- FUNCIONES DEL BANNER ---
+        function abrirSobreNosotros() { document.getElementById("modalSobreNosotros").style.display = "block"; }
+        function cerrarSobreNosotros() { document.getElementById("modalSobreNosotros").style.display = "none"; }
+        function cerrarSesion() { localStorage.clear(); window.location.href = "/"; }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const usuarioId = localStorage.getItem("usuario_id");
+            if (usuarioId) {
+                document.getElementById("paciente_id").value = usuarioId;
+            } else {
+                alert("Atención: No se encontró tu sesión. Por favor inicia sesión nuevamente.");
+            }
+        });
+    </script>
 </body>
 </html>
